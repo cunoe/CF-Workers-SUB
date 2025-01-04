@@ -71,12 +71,6 @@ function processLINK(bestIPs, LINK) {
 			let modifiedUrl = newUrl;
 			const ispLabel = `${isp}-${ipInfo.colo}`;
 			
-			if (newUrl.includes('&path=')) {
-				modifiedUrl = newUrl.replace('&path=', `&path=/${ispLabel}`);
-			} else if (newUrl.includes('?path=')) {
-				modifiedUrl = newUrl.replace('?path=', `?path=/${ispLabel}`);
-			}
-			
 			// 在 type 参数后添加 host 参数
 			const typeIndex = modifiedUrl.indexOf('type=');
 			if (typeIndex !== -1) {
@@ -97,6 +91,18 @@ function processLINK(bestIPs, LINK) {
 			} else {
 				// 如果没有任何参数
 				modifiedUrl = modifiedUrl + `?host=${originalDomain}`;
+			}
+			
+			// 处理备注部分
+			const hashIndex = modifiedUrl.indexOf('#');
+			if (hashIndex !== -1) {
+				// 如果有现有的备注，在其后添加 ISP 标识
+				modifiedUrl = modifiedUrl.slice(0, hashIndex + 1) + 
+							ispLabel + '|' + 
+							modifiedUrl.slice(hashIndex + 1);
+			} else {
+				// 如果没有备注，添加新的备注
+				modifiedUrl = modifiedUrl + '#' + ispLabel;
 			}
 			
 			results.push({
