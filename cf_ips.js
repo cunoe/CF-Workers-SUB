@@ -67,14 +67,37 @@ function processLINK(bestIPs, LINK) {
 				modifiedUrl = newUrl.replace('?path=', `?path=/${ispLabel}`);
 			}
 			
-			const finalUrl = modifiedUrl.includes('?') 
-				? `${modifiedUrl}&host=${originalDomain}`
-				: `${modifiedUrl}?host=${originalDomain}`;
+			// 重新排序参数，确保 host 在 type 之后
+			const urlParts = modifiedUrl.split('?');
+			if (urlParts.length > 1) {
+				const baseUrl = urlParts[0];
+				const params = new URLSearchParams(urlParts[1]);
+				const orderedParams = new URLSearchParams();
 				
+				// 首先添加除 type 和 host 之外的参数
+				for (const [key, value] of params.entries()) {
+					if (key !== 'type' && key !== 'host') {
+						orderedParams.append(key, value);
+					}
+				}
+				
+				// 添加 type 参数（如果存在）
+				if (params.has('type')) {
+					orderedParams.append('type', params.get('type'));
+				}
+				
+				// 最后添加 host 参数
+				orderedParams.append('host', originalDomain);
+				
+				modifiedUrl = `${baseUrl}?${orderedParams.toString()}`;
+			} else {
+				modifiedUrl = `${modifiedUrl}?host=${originalDomain}`;
+			}
+			
 			results.push({
 				isp,
-				url: `cf://${finalUrl}`,
-				originalUrl: url  // 保存原始URL用于匹配
+				url: `cf://${modifiedUrl}`,
+				originalUrl: url
 			});
 		}
 	}
