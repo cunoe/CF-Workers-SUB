@@ -16,14 +16,24 @@ export async function cf_ips(vlessUrls) {
 	
 	// 处理 cf:// 链接
 	const results = processLINK(bestIPs, vlessUrls);
-	const processedLinksMap = new Map(
-		results.map(result => [result.originalUrl, result.url.replace('cf://', '')])
-	);
+	
+	// 创建映射，key是原始URL，value是包含三个运营商链接的数组
+	const processedLinksMap = new Map();
+	results.forEach(result => {
+		if (!processedLinksMap.has(result.originalUrl)) {
+			processedLinksMap.set(result.originalUrl, []);
+		}
+		processedLinksMap.get(result.originalUrl).push(result.url.replace('cf://', ''));
+	});
 	
 	// 保持原始顺序替换链接
-	return vlessUrls.split('\n').map(line => 
-		line.startsWith('cf://vless://') ? processedLinksMap.get(line) : line
-	).join('\n');
+	return vlessUrls.split('\n').map(line => {
+		if (line.startsWith('cf://vless://')) {
+			// 如果是需要处理的链接，返回三个运营商的版本
+			return processedLinksMap.get(line).join('\n');
+		}
+		return line;
+	}).join('\n');
 }
 
 function getBestIP(ipList) {
@@ -67,31 +77,26 @@ function processLINK(bestIPs, LINK) {
 				modifiedUrl = newUrl.replace('?path=', `?path=/${ispLabel}`);
 			}
 			
-			// 重新排序参数，确保 host 在 type 之后
-			const urlParts = modifiedUrl.split('?');
-			if (urlParts.length > 1) {
-				const baseUrl = urlParts[0];
-				const params = new URLSearchParams(urlParts[1]);
-				const orderedParams = new URLSearchParams();
-				
-				// 首先添加除 type 和 host 之外的参数
-				for (const [key, value] of params.entries()) {
-					if (key !== 'type' && key !== 'host') {
-						orderedParams.append(key, value);
-					}
+			// 在 type 参数后添加 host 参数
+			const typeIndex = modifiedUrl.indexOf('type=');
+			if (typeIndex !== -1) {
+				// 找到 type 参数后的 & 或字符串结尾
+				const afterType = modifiedUrl.indexOf('&', typeIndex);
+				if (afterType !== -1) {
+					// 如果 type 后面还有其他参数
+					modifiedUrl = modifiedUrl.slice(0, afterType) + 
+								`&host=${originalDomain}` + 
+								modifiedUrl.slice(afterType);
+				} else {
+					// 如果 type 是最后一个参数
+					modifiedUrl = modifiedUrl + `&host=${originalDomain}`;
 				}
-				
-				// 添加 type 参数（如果存在）
-				if (params.has('type')) {
-					orderedParams.append('type', params.get('type'));
-				}
-				
-				// 最后添加 host 参数
-				orderedParams.append('host', originalDomain);
-				
-				modifiedUrl = `${baseUrl}?${orderedParams.toString()}`;
+			} else if (modifiedUrl.includes('?')) {
+				// 如果没有 type 参数但有其他参数
+				modifiedUrl = modifiedUrl + `&host=${originalDomain}`;
 			} else {
-				modifiedUrl = `${modifiedUrl}?host=${originalDomain}`;
+				// 如果没有任何参数
+				modifiedUrl = modifiedUrl + `?host=${originalDomain}`;
 			}
 			
 			results.push({
