@@ -1,0 +1,13 @@
+name = "cf-workers-sub"
+main = "_worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+LINK = """"""
+TOKEN = "auto"
+TGTOKEN = ""
+TGID = ""
+SUBAPI = "SUBAPI.fxxk.dedyn.io"
+SUBCONFIG = "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini"
+SUBNAME = "CF-Workers-SUB"
+SUBUPTIME = "6" 

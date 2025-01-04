@@ -1,3 +1,4 @@
+import { cf_ips } from './cf_ips.js';
 
 // 部署完成后在网址后面加上这个，获取自建节点和机场聚合节点，/?token=auto或/auto或
 
@@ -41,6 +42,8 @@ export default {
 		subconfig = env.SUBCONFIG || subconfig;
 		FileName = env.SUBNAME || FileName;
 		MainData = env.LINK || MainData;
+		MainData = await cf_ips(MainData);
+		console.log("MainData",MainData);
 		if(env.LINKSUB) urls = await ADD(env.LINKSUB);
 
 		const currentDate = new Date();
