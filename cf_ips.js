@@ -98,7 +98,7 @@ function processLINK(bestIPs, LINK) {
 			if (hashIndex !== -1) {
 				// 如果有现有的备注，在其后添加 ISP 标识
 				modifiedUrl = modifiedUrl.slice(0, hashIndex + 1) + 
-							ispLabel + '|' + 
+							ispLabel + 
 							modifiedUrl.slice(hashIndex + 1);
 			} else {
 				// 如果没有备注，添加新的备注
