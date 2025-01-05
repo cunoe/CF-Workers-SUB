@@ -80,7 +80,7 @@ function processLINK(allIPs, LINK) {
 				const hashIndex = modifiedUrl.indexOf('#');
 				if (hashIndex !== -1) {
 					modifiedUrl = modifiedUrl.slice(0, hashIndex + 1) + 
-								ispLabel + '|' + 
+								ispLabel + 
 								modifiedUrl.slice(hashIndex + 1);
 				} else {
 					modifiedUrl = modifiedUrl + '#' + ispLabel;
