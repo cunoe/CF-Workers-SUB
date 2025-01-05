@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import yaml from 'js-yaml.min.js';
 
 // Define main function (script entry)
 // 国内DNS服务器
