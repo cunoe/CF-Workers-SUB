@@ -24,14 +24,21 @@ export async function cf_ips(vlessUrls) {
 		processedLinksMap.get(result.originalUrl).push(result.url.replace('cf://', ''));
 	});
 	
-	// 保持原始顺序替换链接
-	return vlessUrls.split('\n').map(line => {
+	// 修改返回逻辑，将 cf:// 节点放到最后
+	const normalLines = [];
+	const cfLines = [];
+	
+	vlessUrls.split('\n').forEach(line => {
 		if (line.startsWith('cf://vless://')) {
-			// 返回所有运营商的所有节点版本
-			return processedLinksMap.get(line).join('\n');
+			// cf 节点的所有运营商版本
+			cfLines.push(...processedLinksMap.get(line));
+		} else {
+			normalLines.push(line);
 		}
-		return line;
-	}).join('\n');
+	});
+	
+	// 合并普通节点和 cf 节点
+	return [...normalLines, ...cfLines].join('\n');
 }
 
 function processLINK(allIPs, LINK) {
