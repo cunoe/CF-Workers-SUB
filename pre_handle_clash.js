@@ -87,14 +87,14 @@ function handler(config, profileName) {
         ].name,
       ],
     },
-    {
-      name: "🚀 中优先级节点",
-      type: "fallback",
-      url: "http://www.gstatic.com/generate_204",
-      interval: 300,
-      tolerance: 50,
-      proxies: highPriorityProxies.map((p) => p.name),
-    },
+    // {
+    //   name: "🚀 中优先级节点",
+    //   type: "fallback",
+    //   url: "http://www.gstatic.com/generate_204",
+    //   interval: 300,
+    //   tolerance: 50,
+    //   proxies: highPriorityProxies.map((p) => p.name),
+    // },
     {
       name: "🚀 低优先级节点",
       type: "url-test",
