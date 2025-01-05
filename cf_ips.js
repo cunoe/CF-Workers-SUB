@@ -6,18 +6,18 @@ export async function cf_ips(vlessUrls) {
 		throw new Error("无法获取 Cloudflare IP 信息");
 	}
 
-	const bestIPs = {
-		CM: getBestIP(data.info.CM),
-		CU: getBestIP(data.info.CU),
-		CT: getBestIP(data.info.CT)
+	const allIPs = {
+		CM: data.info.CM || [],
+		CU: data.info.CU || [],
+		CT: data.info.CT || []
 	};
 
-	console.log("最佳节点列表:", bestIPs);
+	console.log("所有节点列表:", allIPs);
 	
 	// 处理 cf:// 链接
-	const results = processLINK(bestIPs, vlessUrls);
+	const results = processLINK(allIPs, vlessUrls);
 	
-	// 创建映射，key是原始URL，value是包含三个运营商链接的数组
+	// 创建映射，key是原始URL，value是所有运营商链接的数组
 	const processedLinksMap = new Map();
 	results.forEach(result => {
 		if (!processedLinksMap.has(result.originalUrl)) {
@@ -29,26 +29,14 @@ export async function cf_ips(vlessUrls) {
 	// 保持原始顺序替换链接
 	return vlessUrls.split('\n').map(line => {
 		if (line.startsWith('cf://vless://')) {
-			// 如果是需要处理的链接，返回三个运营商的版本
+			// 返回所有运营商的所有节点版本
 			return processedLinksMap.get(line).join('\n');
 		}
 		return line;
 	}).join('\n');
 }
 
-function getBestIP(ipList) {
-	if (!ipList || ipList.length === 0) {
-		return null;
-	}
-
-	return ipList.reduce((best, current) => {
-		const currentScore = current.bandwidth - (current.delay / 100);
-		const bestScore = best.bandwidth - (best.delay / 100);
-		return currentScore > bestScore ? current : best;
-	});
-}
-
-function processLINK(bestIPs, LINK) {
+function processLINK(allIPs, LINK) {
 	const urls = LINK.split('\n').filter(url => url.startsWith('cf://vless://'));
 	
 	const results = [];
@@ -60,56 +48,50 @@ function processLINK(bestIPs, LINK) {
 		
 		const originalDomain = match[1];
 		
-		for (const [isp, ipInfo] of Object.entries(bestIPs)) {
-			if (!ipInfo) continue;
-			
-			const newUrl = vlessUrl.replace(
-				`@${originalDomain}:`,
-				`@${ipInfo.ip}:`
-			);
-			
-			let modifiedUrl = newUrl;
-			const ispLabel = `${isp}-${ipInfo.colo}`;
-			
-			// 在 type 参数后添加 host 参数
-			const typeIndex = modifiedUrl.indexOf('type=');
-			if (typeIndex !== -1) {
-				// 找到 type 参数后的 & 或字符串结尾
-				const afterType = modifiedUrl.indexOf('&', typeIndex);
-				if (afterType !== -1) {
-					// 如果 type 后面还有其他参数
-					modifiedUrl = modifiedUrl.slice(0, afterType) + 
-								`&host=${originalDomain}` + 
-								modifiedUrl.slice(afterType);
-				} else {
-					// 如果 type 是最后一个参数
+		// 遍历每个运营商的所有 IP
+		for (const [isp, ipList] of Object.entries(allIPs)) {
+			for (const ipInfo of ipList) {
+				const newUrl = vlessUrl.replace(
+					`@${originalDomain}:`,
+					`@${ipInfo.ip}:`
+				);
+				
+				let modifiedUrl = newUrl;
+				const ispLabel = `${isp}-${ipInfo.colo}`;
+				
+				// 在 type 参数后添加 host 参数
+				const typeIndex = modifiedUrl.indexOf('type=');
+				if (typeIndex !== -1) {
+					const afterType = modifiedUrl.indexOf('&', typeIndex);
+					if (afterType !== -1) {
+						modifiedUrl = modifiedUrl.slice(0, afterType) + 
+									`&host=${originalDomain}` + 
+									modifiedUrl.slice(afterType);
+					} else {
+						modifiedUrl = modifiedUrl + `&host=${originalDomain}`;
+					}
+				} else if (modifiedUrl.includes('?')) {
 					modifiedUrl = modifiedUrl + `&host=${originalDomain}`;
+				} else {
+					modifiedUrl = modifiedUrl + `?host=${originalDomain}`;
 				}
-			} else if (modifiedUrl.includes('?')) {
-				// 如果没有 type 参数但有其他参数
-				modifiedUrl = modifiedUrl + `&host=${originalDomain}`;
-			} else {
-				// 如果没有任何参数
-				modifiedUrl = modifiedUrl + `?host=${originalDomain}`;
+				
+				// 处理备注部分
+				const hashIndex = modifiedUrl.indexOf('#');
+				if (hashIndex !== -1) {
+					modifiedUrl = modifiedUrl.slice(0, hashIndex + 1) + 
+								ispLabel + '|' + 
+								modifiedUrl.slice(hashIndex + 1);
+				} else {
+					modifiedUrl = modifiedUrl + '#' + ispLabel;
+				}
+				
+				results.push({
+					isp,
+					url: `cf://${modifiedUrl}`,
+					originalUrl: url
+				});
 			}
-			
-			// 处理备注部分
-			const hashIndex = modifiedUrl.indexOf('#');
-			if (hashIndex !== -1) {
-				// 如果有现有的备注，在其后添加 ISP 标识
-				modifiedUrl = modifiedUrl.slice(0, hashIndex + 1) + 
-							ispLabel + 
-							modifiedUrl.slice(hashIndex + 1);
-			} else {
-				// 如果没有备注，添加新的备注
-				modifiedUrl = modifiedUrl + '#' + ispLabel;
-			}
-			
-			results.push({
-				isp,
-				url: `cf://${modifiedUrl}`,
-				originalUrl: url
-			});
 		}
 	}
 	
