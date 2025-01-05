@@ -140,6 +140,7 @@ function handler(config, profileName) {
     group.url = "https://www.google.com/generate_204"
     group.timeout = 5000
     group["max-failed-times"] = 3;
+    group.proxies = group.proxies.filter(group => !group.name.includes("美国节点") && !group.name.includes("香港节点"));
   });
 
   config["proxy-groups"] = config["proxy-groups"].filter(group => !group.name.includes("美国节点") && !group.name.includes("香港节点"));
