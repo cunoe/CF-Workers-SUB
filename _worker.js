@@ -1,4 +1,5 @@
 import { cf_ips } from './cf_ips.js';
+import { preHandleClash } from './pre_handle_clash.js';
 
 // 部署完成后在网址后面加上这个，获取自建节点和机场聚合节点，/?token=auto或/auto或
 
@@ -188,7 +189,10 @@ export default {
 					//throw new Error(`Error fetching subconverterUrl: ${subconverterResponse.status} ${subconverterResponse.statusText}`);
 				}
 				let subconverterContent = await subconverterResponse.text();
-				if (订阅格式 == 'clash') subconverterContent =await clashFix(subconverterContent);
+				if (订阅格式 == 'clash') {
+					subconverterContent = await clashFix(subconverterContent)
+					subconverterContent = await preHandleClash(subconverterContent)
+				};
 				return new Response(subconverterContent, {
 					headers: { 
 						"Content-Disposition": `attachment; filename*=utf-8''${encodeURIComponent(FileName)}; filename=${FileName}`,
