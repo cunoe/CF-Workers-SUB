@@ -1,3 +1,5 @@
+import yaml from './js-yaml.min.js';
+
 // Define main function (script entry)
 // 国内DNS服务器
 const domesticNameservers = [
@@ -110,13 +112,14 @@ function handler(config, profileName) {
       interval: 60,
       proxies: [
         "🚀 高优先级节点",
-        "🚀 中优先级节点",
+        // "🚀 中优先级节点",
         "🚀 低优先级节点",
         "♻️ 自动选择",
         "DIRECT",
       ],
     },
   ];
+
   // 将新代理组添加到配置中
   config["proxy-groups"] = [...config["proxy-groups"], ...newProxyGroups];
   // 更新节点选择组的代理顺序
@@ -134,11 +137,15 @@ function handler(config, profileName) {
       group.proxies = [...otherProxies.map((p) => p.name)];
     }
     group.lazy = true;
+    group.url = "https://www.google.com/generate_204"
+    group.timeout = 5000
+    group["max-failed-times"] = 3;
   });
   return config;
 }
 
 export async function preHandleClash(content) {
-  const config = await yaml.parse(content);
-  return yaml.stringify(handler(config, "CUNOE"));
+  const config = await yaml.load(content);
+  const result = yaml.dump(handler(config, "CUNOE"))
+  return result;
 }
