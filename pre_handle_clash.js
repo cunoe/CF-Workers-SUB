@@ -113,7 +113,7 @@ function handler(config, profileName) {
       interval: 60,
       proxies: [
         "🚀 高优先级节点",
-        "🚀 中优先级节点",
+        // "🚀 中优先级节点",
         "🚀 低优先级节点",
         "♻️ 自动选择",
         "DIRECT",
