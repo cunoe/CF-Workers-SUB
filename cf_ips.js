@@ -12,8 +12,6 @@ export async function cf_ips(vlessUrls) {
 		CT: data.info.CT || []
 	};
 
-	console.log("所有节点列表:", allIPs);
-	
 	// 处理 cf:// 链接
 	const results = processLINK(allIPs, vlessUrls);
 	

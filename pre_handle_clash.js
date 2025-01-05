@@ -1,3 +1,5 @@
+import yaml from 'js-yaml';
+
 // Define main function (script entry)
 // 国内DNS服务器
 const domesticNameservers = [
@@ -117,6 +119,7 @@ function handler(config, profileName) {
       ],
     },
   ];
+
   // 将新代理组添加到配置中
   config["proxy-groups"] = [...config["proxy-groups"], ...newProxyGroups];
   // 更新节点选择组的代理顺序
@@ -139,6 +142,7 @@ function handler(config, profileName) {
 }
 
 export async function preHandleClash(content) {
-  const config = await yaml.parse(content);
-  return yaml.stringify(handler(config, "CUNOE"));
+  const config = await yaml.load(content);
+  const result = yaml.dump(handler(config, "CUNOE"))
+  return result;
 }
