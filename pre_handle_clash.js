@@ -95,6 +95,7 @@ function handler(config, profileName) {
       url: "http://www.gstatic.com/generate_204",
       interval: 300,
       tolerance: 50,
+      
       proxies: highPriorityProxies.map((p) => p.name),
     },
     {
@@ -137,6 +138,9 @@ function handler(config, profileName) {
       group.proxies = [...otherProxies.map((p) => p.name)];
     }
     group.lazy = true;
+    group.url = "https://www.google.com/generate_204"
+    group.timeout = 5000
+    group["max-failed-times"] = 3;
   });
   return config;
 }
