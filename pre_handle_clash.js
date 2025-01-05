@@ -141,6 +141,8 @@ function handler(config, profileName) {
     group.timeout = 5000
     group["max-failed-times"] = 3;
   });
+
+  config["proxy-groups"] = config["proxy-groups"].filter(group => !group.name.includes("美国节点") && !group.name.includes("香港节点"));
   return config;
 }
 
