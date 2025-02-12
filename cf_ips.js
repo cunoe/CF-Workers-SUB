@@ -1,19 +1,16 @@
 export async function cf_ips(vlessUrls) {
-	const response = await fetch("https://www.wetest.vip/api/cf2dns/get_cloudflare_ip");
-	const data = await response.json();
-	
-	if (!data.info) {
-		throw new Error("无法获取 Cloudflare IP 信息");
-	}
+    const response = await fetch("https://www.wetest.vip/page/cloudflare/address_v4.html");
+    const html = await response.text();
+    
+    // 解析HTML获取IP信息
+    const allIPs = parseIPsFromHTML(html);
+    
+    if (Object.values(allIPs).every(arr => arr.length === 0)) {
+        throw new Error("无法获取 Cloudflare IP 信息");
+    }
 
-	const allIPs = {
-		CM: data.info.CM || [],
-		CU: data.info.CU || [],
-		CT: data.info.CT || []
-	};
-
-	// 处理 cf:// 链接
-	const results = processLINK(allIPs, vlessUrls);
+    // 处理 cf:// 链接
+    const results = processLINK(allIPs, vlessUrls);
 	
 	// 创建映射，key是原始URL，value是所有运营商链接的数组
 	const processedLinksMap = new Map();
@@ -39,6 +36,47 @@ export async function cf_ips(vlessUrls) {
 	
 	// 合并普通节点和 cf 节点
 	return [...normalLines, ...cfLines].join('\n');
+}
+
+function parseIPsFromHTML(html) {
+    const allIPs = {
+        CM: [], // 移动
+        CU: [], // 联通
+        CT: []  // 电信
+    };
+
+    // 使用正则表达式匹配表格行
+    const rows = html.match(/<tr>[^]*?<\/tr>/g) || [];
+    
+    for (const row of rows) {
+        // 跳过表头
+        if (row.includes("<th>")) continue;
+        
+        // 提取单元格数据
+        const cells = row.match(/<td>([^<]+)<\/td>/g) || [];
+        if (cells.length >= 6) {
+            const carrier = cells[0].replace(/<\/?td>/g, '').trim();
+            const ip = cells[1].replace(/<\/?td>/g, '').trim();
+            const colo = cells[5].replace(/<\/?td>/g, '').trim();
+            
+            const ipInfo = { ip, colo };
+            
+            // 根据运营商分类
+            switch (carrier) {
+                case "移动":
+                    allIPs.CM.push(ipInfo);
+                    break;
+                case "联通":
+                    allIPs.CU.push(ipInfo);
+                    break;
+                case "电信":
+                    allIPs.CT.push(ipInfo);
+                    break;
+            }
+        }
+    }
+    
+    return allIPs;
 }
 
 function processLINK(allIPs, LINK) {
