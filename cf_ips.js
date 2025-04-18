@@ -53,13 +53,24 @@ function parseIPsFromHTML(html) {
         if (row.includes("<th>")) continue;
         
         // 提取单元格数据
-        const cells = row.match(/<td>([^<]+)<\/td>/g) || [];
-        if (cells.length >= 6) {
-            const carrier = cells[0].replace(/<\/?td>/g, '').trim();
-            const ip = cells[1].replace(/<\/?td>/g, '').trim();
-            const colo = cells[5].replace(/<\/?td>/g, '').trim();
+        const cells = row.match(/<td[^>]*data-label="[^"]*">([^<]+)<\/td>/g) || [];
+        if (cells.length >= 7) {
+            const carrier = cells[0].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
+            const ip = cells[1].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
+            const bandwidth = cells[2].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
+            const speed = cells[3].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
+            const latency = cells[4].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
+            const colo = cells[5].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
+            const updateTime = cells[6].match(/data-label="[^"]*">([^<]+)<\/td>/)[1].trim();
             
-            const ipInfo = { ip, colo };
+            const ipInfo = { 
+                ip, 
+                colo,
+                bandwidth,
+                speed,
+                latency,
+                updateTime
+            };
             
             // 根据运营商分类
             switch (carrier) {
