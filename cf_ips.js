@@ -1,5 +1,5 @@
 export async function cf_ips(vlessUrls) {
-    const response = await fetch("https://www.wetest.vip/page/cloudflare/address_v4.html");
+    const response = await fetch("http://www.wetest.vip/page/cloudflare/address_v4.html");
     const html = await response.text();
     
     // 解析HTML获取IP信息
