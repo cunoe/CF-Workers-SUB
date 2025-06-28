@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.22.0"
   }
 }
