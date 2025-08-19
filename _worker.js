@@ -27,7 +27,7 @@ let subProtocol = "https";
 export default {
   async fetch(request, env) {
     const userAgentHeader = request.headers.get("User-Agent");
-    const userAgent = userAgentHeader ? userAgentHeader.toLowerCase() : "null";
+    const userAgent = "clash";
     const url = new URL(request.url);
     const token = url.searchParams.get("token");
     mytoken = env.TOKEN || mytoken;
