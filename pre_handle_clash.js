@@ -106,6 +106,11 @@ function handler(config, profileName) {
       proxies: lowPriorityProxies.map((p) => p.name),
     },
     {
+      name: "🖐 手动选择",
+      type: "select",
+      proxies: otherProxies.map((p) => p.name),
+    },
+    {
       name: "🔄 故障转移",
       type: "fallback",
       url: "http://www.gstatic.com/generate_204",
@@ -114,6 +119,7 @@ function handler(config, profileName) {
         "🚀 高优先级节点",
         // "🚀 中优先级节点",
         "🚀 低优先级节点",
+        "🖐 手动选择",
         "♻️ 自动选择",
         "DIRECT",
       ],
