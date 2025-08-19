@@ -145,6 +145,8 @@ export default {
 
       console.log(订阅格式);
 
+      订阅格式 = "clash";
+
       let subconverterUrl;
       let 订阅转换URL = `${url.origin}/${await MD5MD5(
         fakeToken
